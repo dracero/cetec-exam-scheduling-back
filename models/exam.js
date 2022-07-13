@@ -16,15 +16,11 @@ const examSchema = new mongoose.Schema({
   },
   start: {
     type: Date,
-    required: true,
-    trim: true,
-    lowercase: true,
+    required: true
   },
   finish: {
     type: Date,
-    required: true,
-    trim: true,
-    lowercase: true,
+    required: true
   },
   startMinutesMargin: {
     type: Number,
