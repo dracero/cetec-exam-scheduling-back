@@ -4,6 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+var cookieParser = require('cookie-parser');
+var MongoStore = require('connect-mongo');
+
+var passport = require('passport');
+var GoogleStrategy = require('passport-google-oauth2').Strategy;
+var JWTstrategy = require('passport-jwt').Strategy;
+var {ExtractJwt} = require('passport-jwt');
+
+var session = require('express-session');
+var jwt = require('jsonwebtoken');
 
 require('./config/database.js');
 var indexRouter = require('./routes/index');
@@ -20,6 +30,87 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+//Middleware sesssion persists in Mongo
+app.use(session({
+  store: MongoStore.create({ 
+    mongoUrl: `${process.env.MONGO_URL}`,
+    ttl: 60 * 10
+  }),
+  secret: 'secreto',
+  resave: true,
+  saveUninitialized: true,
+}))
+
+app.use(passport.initialize()) // init passport on every route call
+app.use(passport.session())    //allow passport to use "express-session"
+//Get the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET from Google Developer Console
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
+
+const authUser = (request, accessToken, refreshToken, profile, done) => {
+  return done(null, profile);
+}
+
+//set the JWT options
+const jwtOptions ={} 
+//jwtOptions.jwtFromRequest = ExtractJwt.fromUrlQueryParameter('secret_token'); 
+jwtOptions.jwtFromRequest=ExtractJwt.fromExtractors([ExtractJwt.fromUrlQueryParameter("secret_token"), ExtractJwt.fromHeader("secret_token"), ExtractJwt.fromAuthHeaderAsBearerToken()]);
+//here we have defined all possible extractors in an array
+jwtOptions.secretOrKey = process.env.JWT_SECRET_KEY;
+
+//Use "GoogleStrategy" as the Authentication Strategy
+passport.use(new GoogleStrategy({
+  clientID:     GOOGLE_CLIENT_ID,
+  clientSecret: GOOGLE_CLIENT_SECRET,
+  callbackURL: "http://localhost:8080/auth/google/callback",
+  passReqToCallback   : true
+  }, authUser));
+
+
+passport.serializeUser( async (user, done) => { 
+  console.log(`\n--------> Serialize User:`)
+  console.log(user)
+
+  done(null, user)
+} )
+
+passport.deserializeUser((user, done) => {
+  console.log("\n--------- Deserialized User:")
+  console.log(user)
+
+  done (null, user)
+})
+
+app.get('/auth/google',
+  passport.authenticate('google', { scope:
+      [ 'email', 'profile' ] }
+));
+
+app.get(
+  '/auth/google/callback',
+  passport.authenticate("google"),
+  async function (req, res) {
+    if (req.user) {
+      const token = jwt.sign({id:req.user.email}, process.env.JWT_SECRET_KEY, {expiresIn: process.env.TOKEN_KEEP_ALIVE}); 
+      res.cookie('token', token);
+      
+      console.log(req.user.email + " ha iniciado sesión.");  
+    }      
+    res.redirect('http://localhost:3000/');
+  }
+);
+
+passport.use(new JWTstrategy( 
+  jwtOptions,
+  async (token, done) => {
+    try {
+      return done(null, token.id);
+    } catch (error) {
+      done(error);
+    }
+  }
+)
+);
 
 app.use('/', indexRouter);
 
@@ -32,7 +123,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'http://localhost:8081/' ? err : {};
+  res.locals.error = req.app.get('env') === 'http://localhost:8080/' ? err : {};
 
   // render the error page
   res.status(err.status || 500);
