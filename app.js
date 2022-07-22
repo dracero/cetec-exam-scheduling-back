@@ -112,6 +112,12 @@ passport.use(new JWTstrategy(
 )
 );
 
+//Here is the secrete of all, passing the value in res.locals variable
+app.use((req, res, next) => {
+  res.locals.authenticated = req.isAuthenticated();
+  next();
+});
+
 app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
