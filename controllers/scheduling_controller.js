@@ -15,7 +15,7 @@ const add_exam = async (req, res, next) => {
 
 const logout = (req, res, next) => {
 
-  console.log(req.user.email + " ha cerrado sesión.");
+  //console.log(req.user.email + " ha cerrado sesión.");
 
   req.logout(function(err) {
     if (err) { return next(err); }
