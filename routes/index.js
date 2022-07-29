@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport =  require('passport');
+var multer = require('multer');
 
 var {
   add_exam,
@@ -25,6 +26,6 @@ router.all('*', (req, res, next) => {
 });
 
 router.get('/logout', logout);
-router.post('/exam', checkAuthenticated, add_exam);
+router.post('/exam', multer().none(), checkAuthenticated, add_exam);
 
 module.exports = router;
