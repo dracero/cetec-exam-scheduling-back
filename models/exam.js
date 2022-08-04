@@ -5,8 +5,7 @@ const examSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    lowercase: true,
-    unique: false
+    lowercase: true
   },
   course: {
     type: String,
