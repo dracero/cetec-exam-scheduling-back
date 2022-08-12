@@ -1,10 +1,11 @@
 var express = require('express');
-var router = express.Router();
 var passport =  require('passport');
-var multer = require('multer');
+var router = express.Router();
 
 var {
+  get_exam_start,
   add_exam,
+  put_exam,
   logout
 } = require('../controllers/scheduling_controller.js');
 
@@ -26,6 +27,8 @@ router.all('*', (req, res, next) => {
 });
 
 router.get('/logout', logout);
-router.post('/exam', multer().none(), checkAuthenticated, add_exam);
+router.get('/exam', checkAuthenticated, get_exam_start);
+router.post('/exam', checkAuthenticated, add_exam);
+router.put('/exam/:id', passport.authenticate('jwt', {session: false}), put_exam);
 
 module.exports = router;
