@@ -3,7 +3,7 @@ var passport =  require('passport');
 var router = express.Router();
 
 var {
-  get_exam_start,
+  get_exam_by_course_and_date,
   add_exam,
   put_exam,
   logout
@@ -27,7 +27,7 @@ router.all('*', (req, res, next) => {
 });
 
 router.get('/logout', logout);
-router.get('/exam', checkAuthenticated, get_exam_start);
+router.get('/exam', checkAuthenticated, get_exam_by_course_and_date);
 router.post('/exam', checkAuthenticated, add_exam);
 router.put('/exam/:id', passport.authenticate('jwt', {session: false}), put_exam);
 

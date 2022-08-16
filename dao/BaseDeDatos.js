@@ -6,8 +6,8 @@ class BaseDeDatos {
         this.examModel = exam;
     }
 
-    async get_exam_start (start) {
-        return this.examModel.findOne({start: start})
+    async get_exam_by_course_and_date (course, start) {
+        return this.examModel.findOne({course: course, start: start})
                             .lean()
                             .then(result => { return result })
                             .catch(e => { throw e });

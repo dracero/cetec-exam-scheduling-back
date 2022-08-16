@@ -3,9 +3,9 @@ var axios = require('axios')
 
 let baseDeDatos = new BaseDeDatos();
 
-const get_exam_start = async (req, res, next) => {
+const get_exam_by_course_and_date = async (req, res, next) => {
   try {
-    const exam = await baseDeDatos.get_exam_start(req.query.start);
+    const exam = await baseDeDatos.get_exam_by_course_and_date(req.query.course, req.query.start);
     res.send(exam);
   } catch (error) {
     res.status(500).send(error);
@@ -81,7 +81,7 @@ const edit_dag_run = async (old_id, exam) => {
 }
 
 module.exports = {
-  get_exam_start,
+  get_exam_by_course_and_date,
   add_exam,
   put_exam,
   logout
