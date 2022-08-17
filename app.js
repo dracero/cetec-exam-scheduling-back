@@ -62,7 +62,7 @@ jwtOptions.secretOrKey = process.env.JWT_SECRET_KEY;
 passport.use(new GoogleStrategy({
   clientID:     GOOGLE_CLIENT_ID,
   clientSecret: GOOGLE_CLIENT_SECRET,
-  callbackURL: "http://localhost:8080/auth/google/callback",
+  callbackURL: process.env.BACK_URL + "/auth/google/callback",
   passReqToCallback   : true
   }, authUser));
 
@@ -96,7 +96,7 @@ app.get(
       
       console.log(req.user.email + " ha iniciado sesión.");  
     }      
-    res.redirect('http://localhost:3000/');
+    res.redirect(process.env.FRONT_URL);
   }
 );
 
@@ -129,7 +129,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'http://localhost:8080/' ? err : {};
+  res.locals.error = req.app.get('env') === process.env.BACK_URL ? err : {};
 
   // render the error page
   res.status(err.status || 500);
