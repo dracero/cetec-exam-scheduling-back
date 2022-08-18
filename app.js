@@ -48,6 +48,9 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 
 const authUser = (request, accessToken, refreshToken, profile, done) => {
+  if (profile._json.domain !== 'fi.uba.ar') {
+    return done(new Error("Wrong domain!"));
+  }
   return done(null, profile);
 }
 
@@ -82,9 +85,14 @@ passport.deserializeUser((user, done) => {
 })
 
 app.get('/auth/google',
-  passport.authenticate('google', { scope:
-      [ 'email', 'profile' ] }
-));
+  passport.authenticate('google', {
+    hd: 'fi.uba.ar',
+    scope: [
+      'email',
+      'profile'
+    ]
+  })
+);
 
 app.get(
   '/auth/google/callback',
